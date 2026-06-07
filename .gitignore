@@ -1,0 +1,12 @@
+# python
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+.venv/
+# vscode
+.vscode/
+# mac
+.DS_Store
+# data
+data/
