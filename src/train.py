@@ -7,8 +7,8 @@ from load_fashion_mnist import load_train_data
 from network import NetworkConfig, SimpleMLP
 
 OUTPUT_PATH = Path("sample_weight.pkl")
-EPOCHS = 30
-HIDDEN_SIZE = 256
+EPOCHS = 50
+HIDDEN_SIZE = 512
 LEARNING_RATE = 0.1
 BATCH_SIZE = 128
 SEED = 42
@@ -36,6 +36,10 @@ def main() -> int:
             f"Epoch {epoch:02d}/{EPOCHS} "
             f"loss={loss:.4f} train_acc={train_acc:.4f} valid_acc={valid_acc:.4f}"
         )
+
+
+        model.config.learning_rate *= 0.99 # 学習率を減衰させる
+
 
     with OUTPUT_PATH.open("wb") as f:
         pickle.dump(model.to_state(), f)

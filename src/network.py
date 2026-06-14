@@ -102,6 +102,11 @@ class SimpleMLP:
             dW1 = np.dot(x_batch.T, d_z1_linear)
             db1 = np.sum(d_z1_linear, axis=0)
 
+
+
+            dW2 += 0.001 * self.params["W2"]
+            dW1 += 0.001 * self.params["W1"]
+
             lr = self.config.learning_rate
             self.params["W1"] -= lr * dW1.astype(np.float32)
             self.params["b1"] -= lr * db1.astype(np.float32)
