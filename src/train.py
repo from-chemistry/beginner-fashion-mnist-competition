@@ -7,8 +7,8 @@ from load_fashion_mnist import load_train_data
 from network import NetworkConfig, SimpleMLP
 
 OUTPUT_PATH = Path("sample_weight.pkl")
-EPOCHS = 5
-HIDDEN_SIZE = 64
+EPOCHS = 30
+HIDDEN_SIZE = 256
 LEARNING_RATE = 0.1
 BATCH_SIZE = 128
 SEED = 42

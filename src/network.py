@@ -32,19 +32,25 @@ class SimpleMLP:
     def __init__(self, config: NetworkConfig) -> None:
         self.config = config
         rng = np.random.default_rng(config.seed)
+        
+        # He初期化（ReLUと相性が良い初期化手法に変更）
+        w1_scale = np.sqrt(2.0 / config.input_size)
+        w2_scale = np.sqrt(2.0 / config.hidden_size)
+
         self.params: dict[str, np.ndarray] = {
-            "W1": (rng.standard_normal((config.input_size, config.hidden_size)) * 0.01).astype(
+            "W1": (rng.standard_normal((config.input_size, config.hidden_size)) * w1_scale).astype(
                 np.float32
             ),
             "b1": np.zeros(config.hidden_size, dtype=np.float32),
-            "W2": (rng.standard_normal((config.hidden_size, config.output_size)) * 0.01).astype(
+            "W2": (rng.standard_normal((config.hidden_size, config.output_size)) * w2_scale).astype(
                 np.float32
             ),
             "b2": np.zeros(config.output_size, dtype=np.float32),
         }
 
     def predict_proba(self, x: np.ndarray) -> np.ndarray:
-        z1 = np.tanh(np.dot(x, self.params["W1"]) + self.params["b1"])
+        z1_linear = np.dot(x, self.params["W1"]) + self.params["b1"]
+        z1 = np.maximum(0, z1_linear) # TanhからReLUに変更
         logits = np.dot(z1, self.params["W2"]) + self.params["b2"]
         return _softmax(logits)
 
@@ -74,8 +80,9 @@ class SimpleMLP:
             x_batch = x[batch_idx]
             y_batch = y[batch_idx]
 
+            # --- 順伝播の変更 ---
             z1_linear = np.dot(x_batch, self.params["W1"]) + self.params["b1"]
-            z1 = np.tanh(z1_linear)
+            z1 = np.maximum(0, z1_linear) # TanhからReLUに変更
             logits = np.dot(z1, self.params["W2"]) + self.params["b2"]
             probs = _softmax(logits)
 
@@ -88,8 +95,10 @@ class SimpleMLP:
             dW2 = np.dot(z1.T, d_logits)
             db2 = np.sum(d_logits, axis=0)
 
+            # --- 逆伝播の変更 ---
             d_z1 = np.dot(d_logits, self.params["W2"].T)
-            d_z1_linear = d_z1 * (1.0 - np.square(z1))
+            d_z1_linear = d_z1.copy()
+            d_z1_linear[z1_linear <= 0] = 0 # ReLUの微分処理
             dW1 = np.dot(x_batch.T, d_z1_linear)
             db1 = np.sum(d_z1_linear, axis=0)
 
